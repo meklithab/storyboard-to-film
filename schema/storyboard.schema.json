@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Short Film Storyboard",
+  "type": "object",
+  "required": [
+    "title",
+    "language",
+    "style_block",
+    "characters",
+    "music",
+    "end_card",
+    "shots"
+  ],
+  "properties": {
+    "title": { "type": "string", "minLength": 1 },
+    "logline": { "type": "string" },
+    "language": { "type": "string", "minLength": 1 },
+    "audience": { "type": "string" },
+    "intent": { "type": "string" },
+    "format": {
+      "type": "object",
+      "properties": {
+        "fps": { "type": "integer", "minimum": 1 },
+        "vertical": { "$ref": "#/definitions/dimensions" },
+        "horizontal": { "$ref": "#/definitions/dimensions" }
+      }
+    },
+    "style_block": { "type": "string", "minLength": 1 },
+    "characters": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "reference_prompt", "seed"],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "description": { "type": "string", "minLength": 1 },
+          "reference_prompt": { "type": "string", "minLength": 1 },
+          "seed": { "type": "integer" }
+        }
+      }
+    },
+    "music": {
+      "type": "object",
+      "required": ["caption", "instrumental", "bpm", "key", "duration_seconds", "seed"],
+      "properties": {
+        "caption": { "type": "string", "minLength": 1 },
+        "instrumental": { "type": "boolean" },
+        "bpm": { "type": "number", "exclusiveMinimum": 0 },
+        "key": { "type": "string", "minLength": 1 },
+        "duration_seconds": { "type": "number", "exclusiveMinimum": 0 },
+        "seed": { "type": "integer" },
+        "cues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["start", "end", "note"],
+            "properties": {
+              "start": { "type": "number", "minimum": 0 },
+              "end": { "type": "number", "minimum": 0 },
+              "note": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+    "end_card": {
+      "type": "object",
+      "required": ["text", "duration_seconds"],
+      "properties": {
+        "text": { "type": "string", "minLength": 1 },
+        "duration_seconds": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "shots": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "reason",
+          "shot_size",
+          "characters",
+          "image_prompt",
+          "seed",
+          "motion_prompt",
+          "duration_seconds",
+          "narration"
+        ],
+        "properties": {
+          "id": { "type": "string", "minLength": 1 },
+          "reason": { "type": "string", "minLength": 1 },
+          "shot_size": { "type": "string", "minLength": 1 },
+          "characters": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
+          "image_prompt": { "type": "string", "minLength": 1 },
+          "seed": { "type": "integer" },
+          "motion_prompt": { "type": "string", "minLength": 1 },
+          "duration_seconds": { "type": "number", "exclusiveMinimum": 0 },
+          "narration": {
+            "type": "object",
+            "required": ["text", "english_subtitle", "style"],
+            "properties": {
+              "text": { "type": "string", "minLength": 1 },
+              "english_subtitle": { "type": "string", "minLength": 1 },
+              "style": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "dimensions": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}
