@@ -1,0 +1,234 @@
+{
+  "title": "The Little Bean",
+  "logline": "A nervous little Ethiopian coffee bean survives picking, roasting and grinding, and discovers the reward is a room full of laughing people.",
+  "language": "am",
+  "audience": "My family and friends, watching on their phones",
+  "intent": "They should laugh at the bean's troubles, then feel warm about sitting together and coming together over coffee.",
+  "format": {
+    "fps": 24,
+    "vertical": {
+      "width": 720,
+      "height": 1280
+    },
+    "horizontal": {
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "style_block": "Warm hand-painted cartoon look, soft golden light, gentle paper grain, simple rounded shapes, rich earthy colours of Ethiopian highlands",
+  "characters": [
+    {
+      "id": "bean",
+      "description": "small glossy coffee bean character with two tiny round eyes and a small smile; bright red when ripe, dark brown after roasting",
+      "reference_prompt": "Character sheet of a small glossy coffee bean character with two tiny round eyes and a small smile; bright red when ripe, dark brown after roasting, front view, side view, nervous face, happy face, plain background",
+      "seed": 1234
+    },
+    {
+      "id": "grandmother",
+      "description": "elderly Ethiopian grandmother in a white netela shawl and traditional habesha kemis, round kind face, small gold earrings, cartoon style",
+      "reference_prompt": "Character sheet of an elderly Ethiopian grandmother in a white netela shawl and traditional habesha kemis, round kind face, small gold earrings, cartoon style, front view, side view, smiling, plain background",
+      "seed": 2345
+    }
+  ],
+  "music": {
+    "caption": "Gentle warm instrumental, soft strings, light hand percussion and a plucked krar-like melody, playful and tender, no lead melody",
+    "instrumental": true,
+    "bpm": 90,
+    "key": "G major",
+    "duration_seconds": 73,
+    "seed": 42,
+    "cues": [
+      {
+        "start": 0,
+        "end": 15,
+        "note": "light and curious"
+      },
+      {
+        "start": 15,
+        "end": 50,
+        "note": "playful, a little tense during roasting and grinding"
+      },
+      {
+        "start": 50,
+        "end": 73,
+        "note": "warm, resolves, theme returns at the family gathering"
+      }
+    ]
+  },
+  "end_card": {
+    "text": "Made with AI",
+    "duration_seconds": 3
+  },
+  "shots": [
+    {
+      "id": "shot_01",
+      "reason": "Show where we are: green Ethiopian hillside, the bean hanging on a branch.",
+      "shot_size": "wide",
+      "characters": [
+        "bean"
+      ],
+      "image_prompt": "Green coffee hillside with a branch of coffee cherries, one small bean character on the branch, centred, golden morning light",
+      "seed": 101,
+      "motion_prompt": "Camera pushes in slowly, leaves sway gently",
+      "duration_seconds": 7,
+      "narration": {
+        "text": "እኔ ትንሽ ቡና ነኝ። የምኖረው በኢትዮጵያ ኮረብታ ላይ፣ ከቅርንጫፍ ተንጠልጥዬ ነው።",
+        "english_subtitle": "I am a little coffee bean. I live on a hillside in Ethiopia, hanging from a branch.",
+        "style": "warm, playful, a little dramatic, like a small funny storyteller"
+      }
+    },
+    {
+      "id": "shot_02",
+      "reason": "Meet the character and show its personality: proud but nervous.",
+      "shot_size": "close-up",
+      "characters": [
+        "bean"
+      ],
+      "image_prompt": "Close-up of the red glossy bean character on a branch looking nervous but proud, centred",
+      "seed": 102,
+      "motion_prompt": "Camera holds still, the bean blinks and trembles slightly",
+      "duration_seconds": 7,
+      "narration": {
+        "text": "ቀይ ሆኜ ደምቄያለሁ። ዛሬ ትልቅ ቀን እንደሆነ ይሰማኛል።",
+        "english_subtitle": "I have turned red and shiny. I feel that today is a big day.",
+        "style": "warm, playful, a little dramatic, like a small funny storyteller"
+      }
+    },
+    {
+      "id": "shot_03",
+      "reason": "The adventure begins with a small surprise.",
+      "shot_size": "medium",
+      "characters": [
+        "bean"
+      ],
+      "image_prompt": "A pair of cartoon hands picking the bean from the branch, bean looks shocked, centred",
+      "seed": 103,
+      "motion_prompt": "Camera stays still, the hand lifts the bean gently upward",
+      "duration_seconds": 7,
+      "narration": {
+        "text": "ድንገት አንድ እጅ ቀነጠበችኝ! ወይኔ፣ ምን እየሆነ ነው?",
+        "english_subtitle": "Suddenly a hand plucked me! Oh no, what is happening?",
+        "style": "warm, playful, a little dramatic, like a small funny storyteller"
+      }
+    },
+    {
+      "id": "shot_04",
+      "reason": "Compress travel into one shot and add a bumpy-road joke.",
+      "shot_size": "wide",
+      "characters": [
+        "bean"
+      ],
+      "image_prompt": "Old truck loaded with sacks on a bumpy dirt road through green hills, one bean peeking out of a sack, centred",
+      "seed": 104,
+      "motion_prompt": "Camera tracks slowly alongside, truck bounces lightly",
+      "duration_seconds": 7,
+      "narration": {
+        "text": "ከጓደኞቼ ጋር በጆንያ ተጭኜ በጉድጓድ መንገድ ተንከባለልኩ። እያንዳንዱ ጉብታ ይሰማኛል!",
+        "english_subtitle": "Packed in a sack with my friends, I bounced down a bumpy road. I felt every bump!",
+        "style": "warm, playful, a little dramatic, like a small funny storyteller"
+      }
+    },
+    {
+      "id": "shot_05",
+      "reason": "The funny low point: the roasting pan.",
+      "shot_size": "close-up",
+      "characters": [
+        "bean"
+      ],
+      "image_prompt": "Close-up of the bean character in a black roasting pan over charcoal, sweating drops, wide eyes, centred",
+      "seed": 105,
+      "motion_prompt": "Camera holds still, tiny sweat drops and heat shimmer",
+      "duration_seconds": 7,
+      "narration": {
+        "text": "ከዚያ ድስት ላይ ወደቅሁ። ሞቀ፣ ደግሞ ሞቀ፣ በጣም ሞቀ! ሁሉንም ቡና እንዲህ ያደርጋሉ እንዴ?",
+        "english_subtitle": "Then I landed in the pan. Hot, hotter, so hot! Do they do this to every coffee?",
+        "style": "warm, playful, a little dramatic, like a small funny storyteller"
+      }
+    },
+    {
+      "id": "shot_06",
+      "reason": "Transformation: the bean comes out changed.",
+      "shot_size": "close-up",
+      "characters": [
+        "bean"
+      ],
+      "image_prompt": "Dark brown roasted bean character, smiling slightly, wisps of fragrant smoke around it, centred",
+      "seed": 106,
+      "motion_prompt": "Smoke drifts slowly upward, camera pulls back slightly",
+      "duration_seconds": 7,
+      "narration": {
+        "text": "ጭሱ ሲጠፋ ግን አዲስ ቀለም ነበረኝ፤ ጥቁር ቡናማ፣ እና የሚያጓጓ መዓዛ።",
+        "english_subtitle": "But when the smoke cleared I had a new colour, dark brown, and a wonderful smell.",
+        "style": "warm, playful, a little dramatic, like a small funny storyteller"
+      }
+    },
+    {
+      "id": "shot_07",
+      "reason": "A quick comic beat: the grinding.",
+      "shot_size": "insert",
+      "characters": [
+        "bean"
+      ],
+      "image_prompt": "Wooden mortar and pestle with the dark bean character looking worried inside, centred",
+      "seed": 107,
+      "motion_prompt": "Pestle comes down gently, small shake of the frame",
+      "duration_seconds": 7,
+      "narration": {
+        "text": "ከዚያ ተወቀጥኩ። እሺ፣ ይህን ክፍል አልወደድኩትም።",
+        "english_subtitle": "Then I got pounded. Okay, I did not like this part.",
+        "style": "warm, playful, a little dramatic, like a small funny storyteller"
+      }
+    },
+    {
+      "id": "shot_08",
+      "reason": "Arrival at the ceremony: the setting and the mood change.",
+      "shot_size": "medium",
+      "characters": [
+        "bean"
+      ],
+      "image_prompt": "Clay jebena on glowing charcoal in a cosy room, steam rising, fresh grass on the floor, popcorn bowl nearby, centred",
+      "seed": 108,
+      "motion_prompt": "Camera pushes in slowly, steam curls upward",
+      "duration_seconds": 7,
+      "narration": {
+        "text": "በመጨረሻ በጀበና ውስጥ ገባሁ፤ ከከሰሉ ላይ እየተንቆጠቆጥኩ መዓዛዬ ቤቱን ሞላው።",
+        "english_subtitle": "At last I was in the jebena on the charcoal, and my smell filled the house.",
+        "style": "warm, playful, a little dramatic, like a small funny storyteller"
+      }
+    },
+    {
+      "id": "shot_09",
+      "reason": "The warm centre of the film: grandmother pours.",
+      "shot_size": "medium",
+      "characters": [
+        "grandmother"
+      ],
+      "image_prompt": "Grandmother pouring coffee from a jebena into small cups on a tray, smiling, centred",
+      "seed": 109,
+      "motion_prompt": "Camera stays still, the coffee stream flows, steam rises",
+      "duration_seconds": 7,
+      "narration": {
+        "text": "አያት በትናንሽ ስኒዎች አፈሰሰችኝ፤ ሁሉም ዙሪያዋ ተቀመጡ።",
+        "english_subtitle": "Grandmother poured me into little cups, and everyone sat down around her.",
+        "style": "warm, playful, a little dramatic, like a small funny storyteller"
+      }
+    },
+    {
+      "id": "shot_10",
+      "reason": "Payoff: coffee brings people together.",
+      "shot_size": "wide",
+      "characters": [
+        "grandmother"
+      ],
+      "image_prompt": "Wide view of a cosy room, grandmother and family silhouettes sitting together raising small cups, laughing, centred",
+      "seed": 110,
+      "motion_prompt": "Camera pulls back slowly, warm light glows",
+      "duration_seconds": 7,
+      "narration": {
+        "text": "ያኔ ገባኝ፤ ይህን ሁሉ ያለፍኩት ሰዎች አብረው ሲስቁ ለማየት ነበር።",
+        "english_subtitle": "Then I understood: I went through all of it to see people laugh together.",
+        "style": "warm, playful, a little dramatic, like a small funny storyteller"
+      }
+    }
+  ]
+}
