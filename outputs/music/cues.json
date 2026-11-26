@@ -1,0 +1,25 @@
+{
+  "caption": "Gentle warm instrumental, soft strings, light hand percussion and a plucked krar-like melody, playful and tender, no lead melody",
+  "instrumental": true,
+  "bpm": 90,
+  "key": "G major",
+  "duration_seconds": 83.0,
+  "seed": 42,
+  "cues": [
+    {
+      "start": 0.0,
+      "end": 16.0,
+      "note": "light and curious"
+    },
+    {
+      "start": 16.0,
+      "end": 56.0,
+      "note": "playful, comic, a little tense in the mishaps"
+    },
+    {
+      "start": 56.0,
+      "end": 83.0,
+      "note": "warm, resolves, theme returns at the family gathering"
+    }
+  ]
+}

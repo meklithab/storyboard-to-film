@@ -2,13 +2,12 @@
 
 import json
 from pathlib import Path
-import shutil
 import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from common import ROOT_DIR, compute_hash, is_cached, load_storyboard, save_cache
+from common import ROOT_DIR, ffmpeg_bin, is_cached, load_storyboard, save_cache, shot_total_seconds
 
 KEYFRAMES_DIR = ROOT_DIR / "outputs" / "keyframes"
 DURATIONS_PATH = ROOT_DIR / "outputs" / "narration" / "durations.json"
@@ -60,9 +59,25 @@ def _zoompan_filter(motion: str, total_frames: int, width: int, height: int, fps
     return f"{pre},zoompan=z='{z}':x='{x}':y='{y}':d={n}:s={width}x{height}:fps={fps},setsar=1"
 
 
+def _motion_for_shot(shot: dict, index: int) -> str:
+    """Honour explicit camera directions in motion_prompt, else cycle gently."""
+    prompt = str(shot.get("motion_prompt", "")).lower()
+    if "push" in prompt or "closer" in prompt:
+        return "zoom_in"
+    if "pull" in prompt or "back" in prompt:
+        return "zoom_out"
+    if "pan left" in prompt or "tracks slowly" in prompt:
+        return "pan_left"
+    if "pan right" in prompt:
+        return "pan_right"
+    return MOTIONS[index % len(MOTIONS)]
+
+
 def main() -> int:
-    if shutil.which("ffmpeg") is None:
-        print("Error: ffmpeg not found on PATH.", file=sys.stderr)
+    try:
+        ffmpeg = ffmpeg_bin()
+    except RuntimeError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         return 1
 
     if not DURATIONS_PATH.exists():
@@ -85,9 +100,9 @@ def main() -> int:
             print(f"Error: '{sid}' missing from {DURATIONS_PATH}", file=sys.stderr)
             return 1
 
-        duration = round(float(durations[sid]) + 0.5, 3)
+        duration = shot_total_seconds(durations, sid)
         total_frames = max(1, round(duration * fps))
-        motion = MOTIONS[idx % len(MOTIONS)]
+        motion = _motion_for_shot(shot, idx)
         out_path = SHOTS_DIR / f"{sid}.mp4"
         wan_path = SHOTS_DIR / f"{sid}_wan.mp4"
 
@@ -107,6 +122,7 @@ def main() -> int:
             "source_hash": _file_digest(source_path),
             "duration": duration,
             "motion": motion,
+            "motion_prompt": shot.get("motion_prompt", ""),
             "width": width,
             "height": height,
             "fps": fps,
@@ -121,7 +137,7 @@ def main() -> int:
                 f"crop={width}:{height},fps={fps},setsar=1"
             )
             cmd = [
-                "ffmpeg", "-y",
+                ffmpeg, "-y",
                 "-i", str(source_path),
                 "-vf", vf,
                 "-t", f"{duration:.3f}",
@@ -131,7 +147,7 @@ def main() -> int:
         else:
             vf = _zoompan_filter(motion, total_frames, width, height, fps)
             cmd = [
-                "ffmpeg", "-y",
+                ffmpeg, "-y",
                 "-loop", "1", "-i", str(source_path),
                 "-vf", vf,
                 "-t", f"{duration:.3f}",

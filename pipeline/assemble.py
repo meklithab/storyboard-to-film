@@ -4,13 +4,21 @@ import hashlib
 import json
 from pathlib import Path
 import shlex
-import shutil
 import subprocess
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from common import CACHE_DIR, ROOT_DIR, is_cached, load_storyboard, save_cache
+from common import (
+    CACHE_DIR,
+    ROOT_DIR,
+    ffmpeg_bin,
+    is_cached,
+    load_storyboard,
+    narration_clips,
+    narration_pads,
+    save_cache,
+)
 
 SHOTS_DIR = ROOT_DIR / "outputs" / "shots"
 NARRATION_DIR = ROOT_DIR / "outputs" / "narration"
@@ -37,9 +45,26 @@ def _escape_drawtext(text: str) -> str:
     return text.replace("\\", "\\\\").replace(":", "\\:").replace("'", "\\'")
 
 
+def find_font() -> str:
+    """Return a real TTF path for drawtext; ffmpeg cannot render text without one."""
+    candidates = [
+        Path("C:/Windows/Fonts/arial.ttf"),
+        Path("C:/Windows/Fonts/segoeui.ttf"),
+        Path("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
+        Path("/Library/Fonts/Arial.ttf"),
+    ]
+    for font in candidates:
+        if font.is_file():
+            # Filtergraph escaping: wrap the value in quotes and escape the drive colon.
+            return "'" + font.as_posix().replace(":", "\\:") + "'"
+    raise RuntimeError("No TrueType font found for the end card (tried arial.ttf / DejaVuSans.ttf).")
+
+
 def main() -> int:
-    if shutil.which("ffmpeg") is None:
-        print("Error: ffmpeg not found on PATH.", file=sys.stderr)
+    try:
+        ffmpeg = ffmpeg_bin()
+    except RuntimeError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         return 1
 
     storyboard = load_storyboard()
@@ -53,7 +78,15 @@ def main() -> int:
 
     durations = json.loads(DURATIONS_PATH.read_text(encoding="utf-8"))
     shot_clips = [SHOTS_DIR / f"{s['id']}.mp4" for s in shots]
-    narr_clips = [NARRATION_DIR / f"{s['id']}.wav" for s in shots]
+
+    # Two audio clips per shot: narrator first, then the grandmother's proverb.
+    narr_clips: list[Path] = []
+    narr_pads: list[float] = []
+    for shot in shots:
+        lines = narration_clips(storyboard, shot)
+        for (_role, _line, filename), pad in zip(lines, narration_pads(lines)):
+            narr_clips.append(NARRATION_DIR / filename)
+            narr_pads.append(pad)
 
     missing = [str(p) for p in shot_clips + narr_clips if not p.exists()]
     if missing:
@@ -80,6 +113,8 @@ def main() -> int:
     cache_payload = {
         "clips": [_file_digest(p) for p in shot_clips],
         "narration": [_file_digest(p) for p in narr_clips],
+        "narration_pads": narr_pads,
+        "durations": durations,
         "subtitles": _file_digest(SUBTITLES_PATH),
         "music": _file_digest(MUSIC_PATH) if has_music else None,
         "end_card": end_card,
@@ -99,7 +134,7 @@ def main() -> int:
 
     # a & b: Join clips in order and align each narration line to the start of its shot
     n = len(shots)
-    cmd_join = ["ffmpeg", "-y"]
+    cmd_join = [ffmpeg, "-hide_banner", "-loglevel", "error", "-y"]
     for p in shot_clips:
         cmd_join.extend(["-i", str(p)])
     for p in narr_clips:
@@ -108,13 +143,16 @@ def main() -> int:
     v_in = "".join(f"[{i}:v]" for i in range(n))
     a_filters = []
     a_labels = []
-    for i, shot in enumerate(shots):
-        shot_len = float(durations[shot["id"]]) + 0.5
+    for i, pad in enumerate(narr_pads):
         a_filters.append(
-            f"[{n + i}:a]aresample=44100,aformat=channel_layouts=stereo,apad=whole_dur={shot_len:.3f}[a{i}]"
+            f"[{n + i}:a]aresample=44100,aformat=channel_layouts=stereo,apad=pad_dur={pad:.3f}[a{i}]"
         )
         a_labels.append(f"[a{i}]")
-    fc_join = f"{v_in}concat=n={n}:v=1:a=0[vout];" + ";".join(a_filters) + f";{''.join(a_labels)}concat=n={n}:v=0:a=1[aout]"
+    fc_join = (
+        f"{v_in}concat=n={n}:v=1:a=0[vout];"
+        + ";".join(a_filters)
+        + f";{''.join(a_labels)}concat=n={len(narr_clips)}:v=0:a=1[aout]"
+    )
     cmd_join.extend([
         "-filter_complex", fc_join,
         "-map", "[vout]", "-map", "[aout]",
@@ -134,7 +172,7 @@ def main() -> int:
             "[narr][ducked]amix=inputs=2:duration=first:normalize=0[aout]"
         )
         cmd_music = [
-            "ffmpeg", "-y",
+            ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
             "-i", str(body_av),
             "-stream_loop", "-1", "-i", str(MUSIC_PATH),
             "-filter_complex", fc_music,
@@ -156,7 +194,7 @@ def main() -> int:
         "BorderStyle=1,Outline=2,Shadow=1"
     )
     cmd_sub = [
-        "ffmpeg", "-y",
+        ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
         "-i", str(current_av),
         "-vf", f"subtitles='{sub_rel}':force_style='{sub_style}'",
         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", str(fps),
@@ -167,14 +205,15 @@ def main() -> int:
 
     # e: Append 3-second end card with storyboard text
     escaped_text = _escape_drawtext(end_text)
+    font_arg = find_font()
     fc_end = (
         f"[0:v]setsar=1[v0];"
-        f"[1:v]drawtext=text='{escaped_text}':fontcolor=white:fontsize=42:"
+        f"[1:v]drawtext=fontfile={font_arg}:text='{escaped_text}':fontcolor=white:fontsize=42:"
         "x=(w-text_w)/2:y=(h-text_h)/2,setsar=1[endv];"
         "[v0][0:a][endv][2:a]concat=n=2:v=1:a=1[vout][aout]"
     )
     cmd_end = [
-        "ffmpeg", "-y",
+        ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
         "-i", str(subbed_av),
         "-f", "lavfi", "-i", f"color=c=black:s={vw}x{vh}:r={fps}:d={end_dur}",
         "-f", "lavfi", "-i", f"anullsrc=r=44100:cl=stereo:d={end_dur}",
@@ -188,7 +227,7 @@ def main() -> int:
 
     # f & g: Normalize loudness (-14 LUFS, TP -1 dB) and export vertical + horizontal finals
     cmd_vert = [
-        "ffmpeg", "-y",
+        ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
         "-i", str(with_end_av),
         "-af", "loudnorm=I=-14:TP=-1:LRA=11",
         "-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", str(fps),
@@ -206,7 +245,7 @@ def main() -> int:
         "[bg_blur][fg_s]overlay=(W-w)/2:(H-h)/2[vout]"
     )
     cmd_horiz = [
-        "ffmpeg", "-y",
+        ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
         "-i", str(out_vertical),
         "-filter_complex", fc_horiz,
         "-map", "[vout]", "-map", "0:a",

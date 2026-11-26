@@ -6,6 +6,7 @@
     "title",
     "language",
     "style_block",
+    "voices",
     "characters",
     "music",
     "end_card",
@@ -26,6 +27,19 @@
       }
     },
     "style_block": { "type": "string", "minLength": 1 },
+    "voices": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["voice", "style"],
+        "properties": {
+          "voice": { "type": "string", "minLength": 1 },
+          "style": { "type": "string", "minLength": 1 },
+          "note": { "type": "string" }
+        }
+      }
+    },
     "characters": {
       "type": "array",
       "minItems": 1,
@@ -85,7 +99,8 @@
           "seed",
           "motion_prompt",
           "duration_seconds",
-          "narration"
+          "narration",
+          "proverb"
         ],
         "properties": {
           "id": { "type": "string", "minLength": 1 },
@@ -103,6 +118,17 @@
             "type": "object",
             "required": ["text", "english_subtitle", "style"],
             "properties": {
+              "text": { "type": "string", "minLength": 1 },
+              "english_subtitle": { "type": "string", "minLength": 1 },
+              "style": { "type": "string", "minLength": 1 }
+            }
+          },
+          "proverb": {
+            "type": "object",
+            "required": ["speaker", "situation", "text", "english_subtitle", "style"],
+            "properties": {
+              "speaker": { "type": "string", "minLength": 1 },
+              "situation": { "type": "string", "minLength": 1 },
               "text": { "type": "string", "minLength": 1 },
               "english_subtitle": { "type": "string", "minLength": 1 },
               "style": { "type": "string", "minLength": 1 }

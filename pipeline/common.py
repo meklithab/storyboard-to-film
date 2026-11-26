@@ -5,6 +5,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import shutil
 import time
 from typing import Any, Callable, TypeVar
 import wave
@@ -19,6 +20,12 @@ STORYBOARD_PATH = ROOT_DIR / "storyboard.json"
 SCHEMA_PATH = ROOT_DIR / "schema" / "storyboard.schema.json"
 RUNS_PATH = ROOT_DIR / "runs.jsonl"
 CACHE_DIR = ROOT_DIR / "outputs" / "cache"
+
+# Timeline constants shared by narration, subtitles, radio cut, shots and assembly.
+NARRATOR_ROLE = "narrator"
+DEFAULT_VOICE_FALLBACKS = ("Kore", "Puck", "Sulafat")  # tried if a configured TTS voice is rejected
+NARRATION_GAP_SECONDS = 0.35  # pause between the narrator line and the grandmother's proverb
+SHOT_PAD_SECONDS = 0.5  # quiet tail after the last spoken line in each shot
 
 T = TypeVar("T")
 
@@ -42,6 +49,32 @@ def load_env(env_path: Path | None = None) -> None:
             os.environ[key] = value
 
 
+def ffmpeg_bin() -> str:
+    """Return a usable ffmpeg executable, including common Windows installs.
+
+    winget installs ffmpeg next to a shim that is not always on the PATH of a
+    freshly opened shell. Checking a few known locations keeps ``make film``
+    working without a manual PATH edit.
+    """
+    found = shutil.which("ffmpeg")
+    if found:
+        return found
+    local = os.environ.get("LOCALAPPDATA", "")
+    candidates = [
+        Path(local) / "Microsoft" / "WinGet" / "Links" / "ffmpeg.exe" if local else None,
+        Path("C:/ffmpeg/bin/ffmpeg.exe"),
+        Path("C:/Program Files/ffmpeg/bin/ffmpeg.exe"),
+        ROOT_DIR / ".tools" / "ffmpeg.exe",
+    ]
+    for candidate in candidates:
+        if candidate and candidate.is_file():
+            return str(candidate)
+    raise RuntimeError(
+        "ffmpeg not found. Install it with `winget install --id Gyan.FFmpeg -e` "
+        "and restart your terminal, or add it to PATH."
+    )
+
+
 def get_env(name: str) -> str:
     """Return a required environment variable or raise a clear error."""
     value = os.environ.get(name, "").strip()
@@ -50,10 +83,68 @@ def get_env(name: str) -> str:
     return value
 
 
+def get_api_keys() -> list[str]:
+    """Gemini keys in rotation order: primary, then any free-tier backup keys.
+
+    Free-tier TTS quota is per project per model. Adding a second Google AI
+    Studio project's key lets a run continue when the first project's daily
+    quota is used. Key values are never logged.
+    """
+    keys: list[str] = []
+    candidates = [os.environ.get("GEMINI_API_KEY", "")]
+    candidates += os.environ.get("GEMINI_API_KEYS", "").split(",")
+    candidates += [os.environ.get("GEMINI_API_KEY_2", ""), os.environ.get("GEMINI_API_KEY_3", "")]
+    for candidate in candidates:
+        key = candidate.strip()
+        if key and key not in keys:
+            keys.append(key)
+    if not keys:
+        raise RuntimeError("Missing GEMINI_API_KEY (add it to .env)")
+    return keys
+
+
 def load_storyboard(path: Path = STORYBOARD_PATH) -> dict[str, Any]:
     """Read and parse storyboard.json."""
     with path.open("r", encoding="utf-8") as f:
         return json.load(f)
+
+
+def narration_clips(storyboard: dict[str, Any], shot: dict[str, Any]) -> list[tuple[str, dict, str]]:
+    """Return (role, line, filename) for one shot, in playback order.
+
+    The new storyboard gives every shot two spoken lines: the grandchild narrates
+    the situation, then the character named by ``proverb.speaker`` delivers the
+    proverb. Keeping this ordering in one helper stops the narration, subtitle,
+    radio-cut and assembly stages from drifting apart.
+    """
+    clips = [
+        (
+            NARRATOR_ROLE,
+            shot["narration"],
+            f"{shot['id']}_{NARRATOR_ROLE}.wav",
+        )
+    ]
+    proverb = shot.get("proverb")
+    if proverb:
+        role = proverb["speaker"]
+        clips.append((role, proverb, f"{shot['id']}_{role}.wav"))
+    return clips
+
+
+def shot_total_seconds(durations: dict[str, Any], shot_id: str) -> float:
+    """Read a shot's full timeline length from the durations file."""
+    entry = durations[shot_id]
+    if isinstance(entry, dict):
+        return float(entry["total"])
+    return float(entry)  # legacy single-voice durations.json
+
+
+def narration_pads(clips: list[tuple[str, dict, str]]) -> list[float]:
+    """Pad after each spoken line: a gap before the proverb, a tail after it."""
+    return [
+        NARRATION_GAP_SECONDS if idx < len(clips) - 1 else SHOT_PAD_SECONDS
+        for idx in range(len(clips))
+    ]
 
 
 def log_run(

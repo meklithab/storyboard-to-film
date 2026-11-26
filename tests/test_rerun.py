@@ -10,9 +10,10 @@ import time
 ROOT_DIR = Path(__file__).resolve().parent.parent
 STORYBOARD_PATH = ROOT_DIR / "storyboard.json"
 KEYFRAMES_DIR = ROOT_DIR / "outputs" / "keyframes"
+NARRATION_DIR = ROOT_DIR / "outputs" / "narration"
 SHOTS_DIR = ROOT_DIR / "outputs" / "shots"
 FINAL_DIR = ROOT_DIR / "outputs" / "final"
-STAGES = ("validate", "narration", "keyframes", "shots", "subtitles", "assemble")
+STAGES = ("validate", "narration", "retime", "keyframes", "shots", "music", "subtitles", "assemble")
 
 
 def _run_film() -> str:
@@ -42,9 +43,15 @@ def _run_film() -> str:
     return "\n".join(outputs)
 
 
-def _snapshot_mtimes(shot_ids: list[str]) -> dict[str, int]:
+def _snapshot_mtimes(shot_ids: list[str], proverb_speaker: str) -> dict[str, int]:
     files = {f"keyframe:{sid}": KEYFRAMES_DIR / f"{sid}.jpg" for sid in shot_ids}
     files.update({f"shot:{sid}": SHOTS_DIR / f"{sid}.mp4" for sid in shot_ids})
+    files.update({
+        f"narrator:{sid}": NARRATION_DIR / f"{sid}_narrator.wav" for sid in shot_ids
+    })
+    files.update({
+        f"proverb:{sid}": NARRATION_DIR / f"{sid}_{proverb_speaker}.wav" for sid in shot_ids
+    })
     files["final:vertical"] = FINAL_DIR / "film_vertical.mp4"
     files["final:horizontal"] = FINAL_DIR / "film_horizontal.mp4"
     return {k: (p.stat().st_mtime_ns if p.exists() else 0) for k, p in files.items()}
@@ -55,11 +62,12 @@ def main() -> int:
     storyboard = json.loads(original_text)
     shot_ids = [s["id"] for s in storyboard["shots"]]
     target_id = shot_ids[0]
+    proverb_speaker = storyboard["shots"][0]["proverb"]["speaker"]
 
     try:
         print("1) Running initial `make film`...")
         _run_film()
-        before = _snapshot_mtimes(shot_ids)
+        before = _snapshot_mtimes(shot_ids, proverb_speaker)
 
         time.sleep(0.05)
         storyboard["shots"][0]["image_prompt"] += ", warm morning mist"
@@ -70,7 +78,7 @@ def main() -> int:
 
         print(f"2) Modified image_prompt of {target_id}; re-running `make film`...")
         _run_film()
-        after = _snapshot_mtimes(shot_ids)
+        after = _snapshot_mtimes(shot_ids, proverb_speaker)
 
         print("\nRerun summary:")
         regenerated_shots = []
@@ -90,6 +98,14 @@ def main() -> int:
             and after["final:horizontal"] != before["final:horizontal"]
         )
         print(f"  final assembly: {'REGENERATED' if final_changed else 'SKIPPED'}")
+
+        narration_changed = [
+            sid for sid in shot_ids
+            if after[f"narrator:{sid}"] != before[f"narrator:{sid}"]
+            or after[f"proverb:{sid}"] != before[f"proverb:{sid}"]
+        ]
+        print(f"  narration re-takes: {narration_changed or 'none (all cached)'}")
+        assert not narration_changed, f"Editing an image prompt must not re-synthesise voices: {narration_changed}"
 
         assert regenerated_shots == [target_id], f"Expected only [{target_id}], got {regenerated_shots}"
         assert len(skipped_shots) == len(shot_ids) - 1

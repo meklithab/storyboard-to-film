@@ -1,4 +1,8 @@
-"""Smoke test for Gemini text, Gemini TTS (Amharic), and Cloudflare Workers AI image."""
+"""Smoke test for Gemini text, Gemini TTS (Amharic), and Cloudflare Workers AI image.
+
+The TTS and image prompts come from the active storyboard so this test always
+checks the same voices and visual style the film uses.
+"""
 
 import base64
 from pathlib import Path
@@ -7,36 +11,50 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from common import CACHE_DIR, get_env, load_env, log_run, retry_call, save_audio_wav
+from common import (
+    CACHE_DIR,
+    get_env,
+    load_env,
+    load_storyboard,
+    log_run,
+    retry_call,
+    save_audio_wav,
+)
 
 TEXT_MODEL = "gemini-3.8-flash"
+TEXT_FALLBACKS = (TEXT_MODEL, "gemini-3.8-flash-lite", "gemini-2.5-flash")
 TTS_MODEL = "gemini-3.8-flash-tts"
 IMAGE_MODEL = "@cf/black-forest-labs/flux-1-schnell"
 
 
 def test_gemini_text() -> str:
-    """Call Gemini text generation once and log latency."""
+    """Call Gemini text generation, falling back if a model is overloaded."""
     from google import genai
 
     api_key = get_env("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key)
     prompt = "Reply with one short word: ready."
     params = {"prompt_length": len(prompt)}
+    errors: list[str] = []
 
-    def _call() -> str:
-        t0 = time.perf_counter()
-        try:
-            resp = client.models.generate_content(model=TEXT_MODEL, contents=prompt)
-            text = (resp.text or "").strip()
-            if not text:
-                raise RuntimeError("Empty text response from Gemini")
-            log_run("smoketest", TEXT_MODEL, params, latency_seconds=time.perf_counter() - t0, success=True)
-            return text
-        except Exception as exc:
-            log_run("smoketest", TEXT_MODEL, params, latency_seconds=time.perf_counter() - t0, success=False, error=str(exc))
-            raise
+    for model in TEXT_FALLBACKS:
+        for attempt in range(2):
+            t0 = time.perf_counter()
+            try:
+                resp = client.models.generate_content(model=model, contents=prompt)
+                text = (resp.text or "").strip()
+                if not text:
+                    raise RuntimeError("Empty text response from Gemini")
+                log_run("smoketest", model, params, latency_seconds=time.perf_counter() - t0, success=True)
+                return text
+            except Exception as exc:
+                log_run("smoketest", model, params, latency_seconds=time.perf_counter() - t0, success=False, error=str(exc))
+                errors.append(f"{model}: {exc}")
+                if "503" in str(exc) or "429" in str(exc):
+                    time.sleep(5.0)
+                break  # try the next model rather than hammering a busy one
 
-    return retry_call(_call)
+    raise RuntimeError("Gemini text smoke test failed: " + " | ".join(errors))
 
 
 def test_gemini_tts() -> str:
@@ -46,8 +64,9 @@ def test_gemini_tts() -> str:
 
     api_key = get_env("GEMINI_API_KEY")
     client = genai.Client(api_key=api_key, http_options={"api_version": "v1beta"})
-    sentence = "ሰላም፣ እኔ ትንሽ ቡና ነኝ።"
-    voice_name = "Kore"
+    storyboard = load_storyboard()
+    sentence = storyboard["shots"][0]["narration"]["text"]
+    voice_name = storyboard["voices"]["narrator"]["voice"]
     params = {"voice_name": voice_name, "text_length": len(sentence)}
     out_path = CACHE_DIR / "smoketest_tts.wav"
 
@@ -77,7 +96,8 @@ def test_gemini_tts() -> str:
             log_run("smoketest", TTS_MODEL, params, latency_seconds=time.perf_counter() - t0, success=False, error=str(exc))
             raise
 
-    return retry_call(_call)
+    # Longer waits let a 429 "retry in ~42s" clear before the next attempt.
+    return retry_call(_call, delays=(5.0, 20.0, 45.0))
 
 
 def test_cloudflare_image() -> str:
@@ -87,7 +107,12 @@ def test_cloudflare_image() -> str:
     account_id = get_env("CLOUDFLARE_ACCOUNT_ID")
     api_token = get_env("CLOUDFLARE_API_TOKEN")
     url = f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/{IMAGE_MODEL}"
-    payload = {"prompt": "Small cute cartoon coffee bean on a plain warm background", "steps": 2}
+    storyboard = load_storyboard()
+    shot = storyboard["shots"][0]
+    payload = {
+        "prompt": f"{storyboard['style_block']}. {shot['image_prompt']}",
+        "steps": 2,
+    }
     params = {"steps": payload["steps"], "prompt_length": len(payload["prompt"])}
     out_path = CACHE_DIR / "smoketest_image.jpg"
 

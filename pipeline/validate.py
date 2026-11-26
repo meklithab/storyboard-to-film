@@ -55,6 +55,12 @@ def validate_storyboard(storyboard_path=STORYBOARD_PATH, schema_path=SCHEMA_PATH
         valid_chars = {
             c.get("id") for c in characters if isinstance(c, dict) and isinstance(c.get("id"), str)
         }
+        voices = storyboard.get("voices", {})
+        valid_voices = set(voices) if isinstance(voices, dict) else set()
+        for voice_role, voice_cfg in voices.items() if isinstance(voices, dict) else []:
+            if isinstance(voice_cfg, dict) and not voice_cfg.get("voice"):
+                errors.append(f"Voice '{voice_role}' has no TTS voice name.")
+
         for shot in shots:
             if not isinstance(shot, dict):
                 continue
@@ -64,6 +70,28 @@ def validate_storyboard(storyboard_path=STORYBOARD_PATH, schema_path=SCHEMA_PATH
                     errors.append(
                         f"Shot '{sid}' references unknown character id '{cid}'."
                     )
+            proverb = shot.get("proverb")
+            if isinstance(proverb, dict):
+                speaker = proverb.get("speaker")
+                if speaker not in valid_voices:
+                    errors.append(
+                        f"Shot '{sid}' proverb speaker '{speaker}' is not defined in voices."
+                    )
+                if speaker not in valid_chars:
+                    errors.append(
+                        f"Shot '{sid}' proverb speaker '{speaker}' is not a storyboard character."
+                    )
+
+        try:
+            planned = sum(float(s["duration_seconds"]) for s in shots if isinstance(s, dict))
+            planned += float(storyboard["end_card"]["duration_seconds"])
+            if not 60 <= planned <= 90:
+                errors.append(
+                    f"Planned runtime must be 60-90 seconds including the end card (found {planned:.1f})."
+                )
+        except (KeyError, TypeError, ValueError):
+            # Schema validation already reports malformed duration fields.
+            pass
 
     return errors
 

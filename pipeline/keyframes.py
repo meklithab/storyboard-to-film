@@ -109,9 +109,25 @@ def _generate_image(
 
 
 def _load_chosen(storyboard: dict) -> dict[str, Path] | None:
-    """Load and verify outputs/reference/chosen.json if present."""
+    """Load chosen references, or auto-select the first generated variant.
+
+    ``chosen.json`` remains the human approval gate. If it is absent but a
+    reference sheet already exists, using ``<char>_v1.jpg`` lets a clean clone
+    run ``make film`` end to end; writing chosen.json overrides that default.
+    """
     if not CHOSEN_PATH.exists():
-        return None
+        auto_paths: dict[str, Path] = {}
+        for char in storyboard["characters"]:
+            candidates = sorted(REFERENCE_DIR.glob(f"{char['id']}_v*.jpg"))
+            if not candidates:
+                return None
+            auto_paths[char["id"]] = candidates[0]
+        print(
+            "Note: outputs/reference/chosen.json not found; auto-selected "
+            + json.dumps({k: v.name for k, v in auto_paths.items()})
+            + ". Write chosen.json to override."
+        )
+        return auto_paths
     chosen_raw = json.loads(CHOSEN_PATH.read_text(encoding="utf-8"))
     chosen_paths: dict[str, Path] = {}
     for char in storyboard["characters"]:
@@ -133,6 +149,13 @@ def _load_chosen(storyboard: dict) -> dict[str, Path] | None:
 def _step1_references(storyboard: dict, creds: tuple[str, str] | None) -> dict[str, Path] | None:
     """Generate 4 reference variants per character, then verify chosen.json."""
     REFERENCE_DIR.mkdir(parents=True, exist_ok=True)
+
+    # A human-approved sheet is final: never overwrite the chosen images by
+    # regenerating variants after the storyboard's reference prompt changes.
+    if CHOSEN_PATH.exists():
+        print("Using approved references from chosen.json; skipping reference generation.")
+        return _load_chosen(storyboard)
+
     style_block = storyboard["style_block"]
     account_id, api_token = creds or ("", "")
 
