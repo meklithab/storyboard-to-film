@@ -8,6 +8,7 @@ sys.path.insert(0, str(ROOT_DIR / "pipeline"))
 from common import (  # noqa: E402
     NARRATION_GAP_SECONDS,
     SHOT_PAD_SECONDS,
+    intro_seconds,
     load_storyboard,
     narration_clips,
     narration_pads,
@@ -33,15 +34,20 @@ def main() -> int:
         durations[shot["id"]] = entry
         assert narration_pads(clips) == [NARRATION_GAP_SECONDS, SHOT_PAD_SECONDS]
 
+    intro = intro_seconds(storyboard)
     entries = _build_entries(storyboard, durations)
     assert len(entries) == 2 * len(storyboard["shots"])
-    assert entries[0]["start"] == 0.0
-    assert abs(entries[0]["end"] - 3.0) < 1e-6
-    assert abs(entries[1]["start"] - (3.0 + NARRATION_GAP_SECONDS)) < 1e-6
-    assert abs(entries[2]["start"] - shot_total_seconds(durations, storyboard["shots"][0]["id"])) < 1e-6
+    assert abs(entries[0]["start"] - intro) < 1e-6
+    assert abs(entries[0]["end"] - (intro + 3.0)) < 1e-6
+    assert abs(entries[1]["start"] - (intro + 3.0 + NARRATION_GAP_SECONDS)) < 1e-6
+    assert abs(
+        entries[2]["start"] - (intro + shot_total_seconds(durations, storyboard["shots"][0]["id"]))
+    ) < 1e-6
 
-    film_length = sum(e["total"] for e in durations.values()) + float(
-        storyboard["end_card"]["duration_seconds"]
+    film_length = (
+        intro
+        + sum(e["total"] for e in durations.values())
+        + float(storyboard["end_card"]["duration_seconds"])
     )
     assert abs((entries[-1]["end"] + SHOT_PAD_SECONDS + 3.0) - film_length) < 1e-6
 

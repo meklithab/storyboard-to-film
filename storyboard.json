@@ -13,9 +13,10 @@
     "horizontal": {
       "width": 1280,
       "height": 720
-    }
+    },
+    "horizontal_prompt_suffix": "Wide 16:9 landscape composition of the same scene and the same grandmother, the full action visible and spread across the frame, more of the room or landscape at left and right, subject slightly off centre, no extreme close crop, no letterbox"
   },
-  "style_block": "Warm hand-painted cartoon look, soft golden light, gentle paper grain, simple rounded shapes, rich earthy colours of Ethiopian highlands",
+  "style_block": "Hand-painted gouache children's-book illustration in warm earthy Ethiopian highland colours, ochre, terracotta, eucalyptus green and deep coffee brown, soft golden light, visible brush texture, gentle rounded shapes, expressive faces, authentic Ethiopian village and home details, not anime, not photorealistic",
   "voices": {
     "narrator": {
       "voice": "Puck",
@@ -31,8 +32,8 @@
   "characters": [
     {
       "id": "grandmother",
-      "description": "elderly Ethiopian grandmother in a white netela shawl and traditional habesha kemis, round kind face, small gold earrings, calm amused smile, cartoon style",
-      "reference_prompt": "Character sheet of an elderly Ethiopian grandmother in a white netela shawl and traditional habesha kemis, round kind face, small gold earrings, calm amused smile, cartoon style, front view, side view, smiling, raised finger as if giving wise advice, plain background",
+      "description": "An elderly Habesha grandmother from the Ethiopian highlands, deep warm-brown skin, high cheekbones, a broad round face with deep smile lines and kind knowing eyes, silver-streaked tightly braided black hair wrapped in a white cotton netela scarf, slightly stooped posture, small gold hoop earrings, a white hand-woven kemis dress with narrow embroidered tibb bands in gold and red at the neckline and hem, calm amused half-smile",
+      "reference_prompt": "Character reference sheet of the same elderly Habesha grandmother from the Ethiopian highlands, deep warm-brown skin, high cheekbones, round face with smile lines, silver-streaked braided hair wrapped in a white cotton netela scarf, slightly stooped, small gold hoop earrings, white kemis with gold and red embroidered tibb bands, four panel views: front view, three-quarter view, side profile, and a warm laughing expression with one raised finger giving advice, identical face, braids, shawl and embroidery in every panel, plain warm beige background",
       "seed": 2345
     }
   ],
@@ -61,6 +62,11 @@
       }
     ]
   },
+  "intro": {
+    "title": "Grandma Has a Proverb for Everything",
+    "description": "Ten small mishaps. Ten proverbs. One grandmother who always knows what to say.",
+    "duration_seconds": 4
+  },
   "end_card": {
     "text": "Made with AI",
     "duration_seconds": 3
@@ -73,7 +79,7 @@
       "characters": [
         "grandmother"
       ],
-      "image_prompt": "Grandmother sitting beside a small garden in the yard, showing a grandchild a tiny newly planted seedling while the child eagerly checks whether it has grown, coffee tray nearby, green Ethiopian hillside, warm morning light, centred",
+      "image_prompt": "In a sunlit highland compound, the grandmother sits on a low wooden stool beside a tiny seedling in a tin-can planter, leaning forward with her white netela slipping off one shoulder as she turns an earthenware coffee tray so the child can see. A barefoot grandchild in a faded yellow shirt crouches beside her, impatiently poking the soil with one finger. Behind them a round tukul roof, eucalyptus trees and terraced green hills, golden morning light, dust motes in the air, both faces clearly visible",
       "seed": 101,
       "motion_prompt": "Camera pushes in slowly, leaves sway gently",
       "duration_seconds": 8,
@@ -97,7 +103,7 @@
       "characters": [
         "grandmother"
       ],
-      "image_prompt": "Grandmother standing calmly under the doorway with a grandchild as rain falls over a once-dry garden, fresh water soaking the plants and filling a small water barrel, the family picnic basket set aside, centred",
+      "image_prompt": "Under the wooden doorway of a rural Ethiopian home, the grandmother stands calmly with one hand raised, watching rain drum onto the dry garden. A grandchild in a soaked yellow shirt peeks out from behind her holding an abandoned picnic basket, while droplets splash into a clay water barrel and revive wilted bean plants. Grey-green rain light, wet red earth, a corrugated roof, the grandmother's white netela glowing against the gloom",
       "seed": 102,
       "motion_prompt": "Camera holds still, rain falls, grandmother slowly raises one finger",
       "duration_seconds": 8,
@@ -121,7 +127,7 @@
       "characters": [
         "grandmother"
       ],
-      "image_prompt": "Grandmother beside a small traditional goldsmith's workshop, watching a young craftsperson carefully test a tiny piece of gold over a controlled flame, warm firelight on their focused faces, tools neatly arranged, centred",
+      "image_prompt": "Inside a small open-sided goldsmith's workshop, the grandmother sits close to a charcoal brazier where a young craftsperson in a white cotton shirt tests a tiny gold ring in the flame with iron tongs. Orange firelight catches the grandmother's high cheekbones and the red embroidery on her kemis as she nods wisely. Tools and a small brass scale lie on a worn wooden bench, dark timber walls, smoke curling upward, an intimate close-up on both faces",
       "seed": 103,
       "motion_prompt": "Camera holds still, smoke drifts upward, grandmother nods wisely",
       "duration_seconds": 8,
@@ -145,7 +151,7 @@
       "characters": [
         "grandmother"
       ],
-      "image_prompt": "Grandmother and her grandchild walking together along a long winding footpath toward a distant Ethiopian village market, carrying a small basket, the path rising gently ahead, warm afternoon light, centred",
+      "image_prompt": "Late-afternoon light on a long red-earth footpath winding up toward a distant highland market. The grandmother walks steadily in her white kemis and netela with a woven basket balanced on her shoulder, beside a tired grandchild dragging a little wooden stool. Acacia trees, stone walls and layered green hills in the distance, fine dust rising behind their sandals, the path leading the eye forward, both figures fully visible in the lower third",
       "seed": 104,
       "motion_prompt": "Camera holds still, the two keep walking, dust drifts behind them",
       "duration_seconds": 8,
@@ -169,7 +175,7 @@
       "characters": [
         "grandmother"
       ],
-      "image_prompt": "Grandmother encouraging a young family member at a table as they carefully practise writing and complete a difficult page in a notebook, several earlier practice pages beside them, a small cup of tea, warm lamplight, centred",
+      "image_prompt": "At a small wooden table under a kerosene lamp in a modest Ethiopian home, the grandmother leans over a grandchild's exercise book, pointing gently at a neatly completed page while earlier crumpled practice sheets lie stacked beside a small tea glass. Her netela is folded across her lap, the child's face lit with sudden pride, warm amber lamplight, mud walls with stacked books and a woven mat, an intimate medium shot",
       "seed": 105,
       "motion_prompt": "Camera pushes in slowly, lamp light flickers softly",
       "duration_seconds": 8,
@@ -193,7 +199,7 @@
       "characters": [
         "grandmother"
       ],
-      "image_prompt": "Grandmother standing beside a courtyard as a child who has gently fallen while learning to ride a small bicycle gets back onto their feet and reaches for the handlebars again, bicycle tipped on its side, reassuring expression, centred",
+      "image_prompt": "In a dusty village courtyard, a grandchild in a faded yellow shirt has tipped off a small blue bicycle onto the red earth and is pushing up onto their feet again, knees scraped but grinning. The grandmother stands a pace away with both hands half raised, not helping but ready, her netela blown slightly by the breeze. A bent handlebar, scattered sandals, a tukul wall and eucalyptus leaves behind, bright midday sun, clear space around the action",
       "seed": 106,
       "motion_prompt": "Camera holds still, sandals tumble through the air, grandmother does not move",
       "duration_seconds": 8,
@@ -217,7 +223,7 @@
       "characters": [
         "grandmother"
       ],
-      "image_prompt": "Grandmother sitting with a calm knowing smile as two neighbours whisper with speech bubbles, while the grandchild pauses with lips closed and looks thoughtful, a gentle finger-to-lips gesture from grandmother, centred",
+      "image_prompt": "In the shade of a compound veranda, two neighbours lean together whispering with small comic speech-bubble shapes hovering above them, while a grandchild sits on a low stool with lips pressed shut and a thoughtful look. The grandmother beside them lowers a single raised finger from her lips, calm and knowing, her gold hoop earrings catching light. Woven baskets and a sleeping goat in the background, soft dappled shade",
       "seed": 107,
       "motion_prompt": "Camera holds still, speech bubbles pop and fade, grandmother lowers her finger slowly",
       "duration_seconds": 8,
@@ -241,7 +247,7 @@
       "characters": [
         "grandmother"
       ],
-      "image_prompt": "Grandmother warmly dividing a small injera and serving of stew between her family and a neighbour who has come asking for help, the grandchild helping pass a plate, humble Ethiopian home, welcoming expressions, centred",
+      "image_prompt": "At the doorway of a humble highland home at sunset, the grandmother divides a round injera and a small bowl of lentil stew between her own family and a thin neighbour wrapped in a worn shawl, a grandchild passing a tin plate. Warm light spills out onto the packed-earth yard, her white kemis and netela bright against the dark doorway, generous faces, a cooking pot and stacked firewood nearby, a welcoming wide composition",
       "seed": 108,
       "motion_prompt": "Camera pushes in slowly as the door opens and warm light spills out",
       "duration_seconds": 8,
@@ -265,7 +271,7 @@
       "characters": [
         "grandmother"
       ],
-      "image_prompt": "Grandmother kneeling beside a clay jebena on glowing charcoal in a cosy room, steam rising, fresh grass on the floor, popcorn bowl nearby, small cups on a tray, smiling, centred",
+      "image_prompt": "Inside a cosy Ethiopian living room, the grandmother kneels on freshly cut green grass spread over the floor beside a black clay jebena on glowing charcoal, steam rising as she pours coffee into tiny handleless cups on a wooden tray. Popcorn in a small bowl, incense smoke, patterned wall hangings, a grandchild watching wide-eyed, her face and hands lit by the brazier's orange glow, rich warm medium shot",
       "seed": 109,
       "motion_prompt": "Camera pushes in slowly, steam curls upward, grandmother pours coffee",
       "duration_seconds": 8,
@@ -289,7 +295,7 @@
       "characters": [
         "grandmother"
       ],
-      "image_prompt": "Wide view of a cosy room, grandmother in the middle with family silhouettes sitting together raising small cups, laughing, warm glowing light, centred",
+      "image_prompt": "A warm crowded room at night, the grandmother seated in the middle in her white kemis and netela raising a small coffee cup, surrounded by three generations of family laughing together on low stools and woven mats, cups raised, the jebena still steaming on the brazier behind her. Golden lamplight, joyful faces, a wide group composition with the grandmother clearly central and recognisable",
       "seed": 110,
       "motion_prompt": "Camera pulls back slowly, warm light glows",
       "duration_seconds": 8,

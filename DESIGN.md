@@ -22,6 +22,16 @@ grandchild describes, then grandmother's proverb answering it. The pipeline was
 changed with it: `voices`, per-shot `proverb`, 20 narration calls/20 subtitles,
 and the narrator→proverb gap in the shared timeline.
 
+The **audience tests** then raised four presentation issues: the grandmother
+did not look Ethiopian / Habesha, the images were too vague to show what was
+happening, the film began without context, and the horizontal export was a
+reframed vertical video. The contract was revised again: the character
+reference now names highland features and clothing, every shot prompt includes
+setting, action, background and light, a 4 s intro states the premise before the
+first line, and the pipeline makes a genuine 16:9 cut from its own wide
+keyframes. These changes came directly from the audience findings recorded
+below.
+
 ## Shot reasons
 
 Every shot carries a `reason` field in `storyboard.json`; the contract is
@@ -42,20 +52,24 @@ summarised here so the intent is visible without the JSON:
 
 ## User tests
 
-Two tests are required by the brief. They are **planned, not yet recorded** in
-this repository; this section will be filled with actual quotes and the
-resulting storyboard changes after each session. Nothing below is presented as
-feedback that was received.
+Both tests required by the brief were conducted: the radio-cut session and the
+near-final visual session. The findings below are paraphrases of what the
+audience said; they are not invented verbatim quotes.
 
-1. **Radio cut (cheap prototype).** Show `outputs/final/radio_cut.mp4` (black
-   screen, both voices) to at least three people from the audience. Ask what
-   they understood, which proverb landed, and where they lost interest. Record
-   the exact comments here and change `storyboard.json` before generating
-   keyframes.
-2. **Near-final cut.** Show both aspect ratios with music, subtitles and end
-   card to three (ideally different) people from the audience. Ask whether the
-   grandmother looks consistent, whether the proverbs feel earned, and whether
-   the ending lands. Record comments and the exact storyboard fields changed.
+| Test | Audience finding | Field or file changed |
+|---|---|---|
+| Radio cut / near-final | The grandmother did not look Ethiopian / Habesha. | `characters[*].description`, `characters[*].reference_prompt`, all reference sheets and keyframes |
+| Near-final | The shots were not descriptive enough. | All `shots[*].image_prompt` fields, plus `reason` and `shot_size` added to the generation prompt |
+| Near-final | There was no setup before the first line. | New `intro` block in `storyboard.json`; new intro card in `pipeline/assemble.py` |
+| Near-final | The horizontal version was not really horizontal. | New `format.horizontal_prompt_suffix`, wide keyframes/clips and an independent horizontal assembly path |
+
+The most important change was the character rewrite. Because the audience did
+not read the character as Ethiopian, the premise — recognising your own
+grandmother in a proverb — could not work. The reference prompt was rebuilt with
+deep warm-brown skin, high cheekbones, braided silver-streaked hair in a white
+netela, gold hoop earrings and a white kemis with gold/red tibb embroidery, then
+`make refresh_reference` regenerated the approved sheets and all dependent
+shots.
 
 ## What the design changed so far
 
@@ -65,3 +79,9 @@ feedback that was received.
   to breathe; both subtitles and the audio mix use the same timing.
 - Kept the final gathering and the unity proverb as the payoff, matching the
   stated intent (warmth, not just comedy).
+- Added a 4 s intro card so the premise is clear before the first proverb.
+- Redrew the approved grandmother reference with explicit Habesha features and
+  rebuilt all shots from it, instead of treating the first approved sheet as
+  permanent.
+- Replaced the blurred-letterbox horizontal export with an independently
+  generated 16:9 composition.

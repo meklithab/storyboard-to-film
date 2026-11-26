@@ -1,78 +1,79 @@
 {
-  "speed": 1.0535,
-  "target_film_seconds": 86.0,
+  "speed": 1.0679,
+  "target_film_seconds": 89.0,
+  "intro_seconds": 4.0,
   "retimed_hashes": {
-    "shot_01_narrator.wav": "2629e9c3e2180f7a758b7b72087542e8575cadd6791d7f2c11ecf7322291527b",
-    "shot_01_grandmother.wav": "a3ebcac809a75c504ab7a62019f572d67cc2d77b92c4218ba643174ab3776529",
-    "shot_02_narrator.wav": "3c0a32e9187b409268927cdbee3e117e30ee67ca4aaf55c90b03f31dc659d49f",
-    "shot_02_grandmother.wav": "fb6ba9203b658f8cf26deb7e781eeeeb343b26cc78f32101a7c74e53453f0a45",
-    "shot_03_narrator.wav": "4f48c349b57ec11e75b54265ea7598c197428739b2f2d8ac0e4fd553eceb7388",
-    "shot_03_grandmother.wav": "a407b05b44df22f6da8c2ab07851264eb9fbcc924e664c2cb23607d3e07af8e3",
-    "shot_04_narrator.wav": "7f93610f74cba32e48b39add6bf60582a68653f6af5282f1dd0ddbf5f833e2a2",
-    "shot_04_grandmother.wav": "4ce86564982bbd51498af6b6009e08464cb36e59ca40f43f36bc17734ec8529c",
-    "shot_05_narrator.wav": "5f1428fa21ae8a655ba6d41128ec89ab5d9274514b2d3a50414ceaec33796ad9",
-    "shot_05_grandmother.wav": "46f0d5a62a6d62d1d27ea96e3cd0fcc11664d92380beb5c98d056aac15c4e7b8",
-    "shot_06_narrator.wav": "78061e83255bce7ab774e0a5f97b0cffafa2d98a5569b12a741ddb33907dbb77",
-    "shot_06_grandmother.wav": "83ea5e674591b4f9799891b8c750c91a16befb1d95c7dca5e83258b0ae452b8b",
-    "shot_07_narrator.wav": "33e5444c774dfd6b0b7482bb51bc8a2d7ab2c676fd494cf616d833b347e47cc4",
-    "shot_07_grandmother.wav": "bc0025351bbd505cf12d9dec610a029d50933314139a0258ff3c65515d306a82",
-    "shot_08_narrator.wav": "846ff87dce3fffb6149a88ca70519f7e78ad98a0bc521c5268006516a8e58c40",
-    "shot_08_grandmother.wav": "8f24e1970ff95769ebe4144e4217ab50d44d6f9e183ecec1ea149dde7d4c23a0",
-    "shot_09_narrator.wav": "5d7b101ac562f25f957b454ef6231cca5b91f97722539a6c0f2b9165c1bae2ac",
-    "shot_09_grandmother.wav": "9eb8feb380bea37418ef899b0494a94237c293dbdc2967ee4faac101518d254b",
-    "shot_10_narrator.wav": "b195cee08d6fc49f20ee3c58131bdf756f2eb6e1da73090fe7dbf94d795ccb7f",
-    "shot_10_grandmother.wav": "14326df86dbe727fcdcfaf2fe746f24147dde42051dce04fc7c26ae9d94912ca"
+    "shot_01_narrator.wav": "43b6aac1699205ba7b3803652c961f291d8892725129dd795729560a339e1b89",
+    "shot_01_grandmother.wav": "41c709ff041ac1e659ba4cd419964325eb02f1a118a8cd101e6df87b6b040c76",
+    "shot_02_narrator.wav": "ab65f46feae0e2ddcc6717bdf7e21eb62360171773fbc8b6e9857b7d696aad4b",
+    "shot_02_grandmother.wav": "c733fae68dd75dc79bc5bce0e03f00720f0735f409f1b4ee718e51e0d774420a",
+    "shot_03_narrator.wav": "cef52d7216b563c164296ea0a390d28e699e7ab8c01b592510d3389185c42344",
+    "shot_03_grandmother.wav": "b83eab76d520bd38364ca9d9c7d9c8e70deff78294d255650ac1885248872fa3",
+    "shot_04_narrator.wav": "b6a9aaf11cace79b4e713b6d59e4fcdaa23ced2e52c0255b75e1652c2773aa23",
+    "shot_04_grandmother.wav": "eae8240170c1117b1f56d04c83aa04d84318d2390eb7bf476e732e71271c87c5",
+    "shot_05_narrator.wav": "63ff3570a17160587e6d7e2459ba21791de3d390f7eaec757d0a61033a291736",
+    "shot_05_grandmother.wav": "221bfafcacbd098a1728ca4bbc7ed04f26f45e5bc3f38d14ad281ab16aaf3706",
+    "shot_06_narrator.wav": "f9d0932618ece25c8b8dcb37f3342ce4f05a974297742c287e33801cd706843e",
+    "shot_06_grandmother.wav": "df2385a0717cbd99948239af72833cf8f71cc27d46e6a5ebc77e586053d695de",
+    "shot_07_narrator.wav": "45f61ee249f7926cba7225268d0c7c9cb5c2d0a20175edf74b151fff334b3f7c",
+    "shot_07_grandmother.wav": "44d7bd412054849aec5cdcdd35495688cb10cdce003d4f4557a6f5980d048028",
+    "shot_08_narrator.wav": "5b2b1d19db27269e9d5aa91d656f04e30e02d0a40945fbcab61165b172c76663",
+    "shot_08_grandmother.wav": "21272b1267541afa9a957c27df602f1a573f0dabffb5b9b0ce4ce8329c868003",
+    "shot_09_narrator.wav": "0eea24aa50e8108e5ecb55d99019cea362f0ac26c3f0e9dab61f79132713a56a",
+    "shot_09_grandmother.wav": "98452f5609a1e80e884f880956d4e76c1a8df03e75c08dea40db81f0ee1aca7f",
+    "shot_10_narrator.wav": "5be90e95bce2ca55d41544fc2e2400e4e087901d29607d1ae1c8f9c5c2340595",
+    "shot_10_grandmother.wav": "cdbbcfdc9191f6ed35ad3e3f1d826e0a6be9c12513ceeda2798151e6de3242c8"
   },
   "durations": {
     "shot_01": {
-      "narrator": 3.583,
-      "grandmother": 4.04,
-      "total": 8.473
+      "narrator": 3.535,
+      "grandmother": 3.986,
+      "total": 8.371
     },
     "shot_02": {
-      "narrator": 5.326,
-      "grandmother": 2.109,
-      "total": 8.285
+      "narrator": 5.255,
+      "grandmother": 2.081,
+      "total": 8.186
     },
     "shot_03": {
-      "narrator": 5.385,
-      "grandmother": 2.334,
-      "total": 8.569
+      "narrator": 5.313,
+      "grandmother": 2.303,
+      "total": 8.466
     },
     "shot_04": {
-      "narrator": 3.453,
-      "grandmother": 1.929,
-      "total": 6.232
+      "narrator": 3.406,
+      "grandmother": 1.903,
+      "total": 6.159
     },
     "shot_05": {
-      "narrator": 3.791,
-      "grandmother": 4.327,
-      "total": 8.968
+      "narrator": 3.74,
+      "grandmother": 4.269,
+      "total": 8.859
     },
     "shot_06": {
-      "narrator": 4.008,
-      "grandmother": 2.591,
-      "total": 7.449
+      "narrator": 3.955,
+      "grandmother": 2.557,
+      "total": 7.362
     },
     "shot_07": {
-      "narrator": 4.238,
-      "grandmother": 5.411,
-      "total": 10.499
+      "narrator": 4.181,
+      "grandmother": 5.339,
+      "total": 10.37
     },
     "shot_08": {
-      "narrator": 5.026,
-      "grandmother": 1.971,
-      "total": 7.847
+      "narrator": 4.958,
+      "grandmother": 1.945,
+      "total": 7.753
     },
     "shot_09": {
-      "narrator": 3.782,
-      "grandmother": 2.459,
-      "total": 7.091
+      "narrator": 3.731,
+      "grandmother": 2.426,
+      "total": 7.007
     },
     "shot_10": {
-      "narrator": 5.472,
-      "grandmother": 3.263,
-      "total": 9.585
+      "narrator": 5.398,
+      "grandmother": 3.219,
+      "total": 9.467
     }
   }
 }

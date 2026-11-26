@@ -1,52 +1,52 @@
 {
   "shot_01": {
-    "narrator": 3.583,
-    "grandmother": 4.04,
-    "total": 8.473
+    "narrator": 3.535,
+    "grandmother": 3.986,
+    "total": 8.371
   },
   "shot_02": {
-    "narrator": 5.326,
-    "grandmother": 2.109,
-    "total": 8.285
+    "narrator": 5.255,
+    "grandmother": 2.081,
+    "total": 8.186
   },
   "shot_03": {
-    "narrator": 5.385,
-    "grandmother": 2.334,
-    "total": 8.569
+    "narrator": 5.313,
+    "grandmother": 2.303,
+    "total": 8.466
   },
   "shot_04": {
-    "narrator": 3.453,
-    "grandmother": 1.929,
-    "total": 6.232
+    "narrator": 3.406,
+    "grandmother": 1.903,
+    "total": 6.159
   },
   "shot_05": {
-    "narrator": 3.791,
-    "grandmother": 4.327,
-    "total": 8.968
+    "narrator": 3.74,
+    "grandmother": 4.269,
+    "total": 8.859
   },
   "shot_06": {
-    "narrator": 4.008,
-    "grandmother": 2.591,
-    "total": 7.449
+    "narrator": 3.955,
+    "grandmother": 2.557,
+    "total": 7.362
   },
   "shot_07": {
-    "narrator": 4.238,
-    "grandmother": 5.411,
-    "total": 10.499
+    "narrator": 4.181,
+    "grandmother": 5.339,
+    "total": 10.37
   },
   "shot_08": {
-    "narrator": 5.026,
-    "grandmother": 1.971,
-    "total": 7.847
+    "narrator": 4.958,
+    "grandmother": 1.945,
+    "total": 7.753
   },
   "shot_09": {
-    "narrator": 3.782,
-    "grandmother": 2.459,
-    "total": 7.091
+    "narrator": 3.731,
+    "grandmother": 2.426,
+    "total": 7.007
   },
   "shot_10": {
-    "narrator": 5.472,
-    "grandmother": 3.263,
-    "total": 9.585
+    "narrator": 5.398,
+    "grandmother": 3.219,
+    "total": 9.467
   }
 }

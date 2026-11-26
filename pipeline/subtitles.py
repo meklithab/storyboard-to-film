@@ -15,6 +15,7 @@ from common import (
     NARRATION_GAP_SECONDS,
     ROOT_DIR,
     SHOT_PAD_SECONDS,
+    intro_seconds,
     is_cached,
     load_storyboard,
     narration_clips,
@@ -59,7 +60,8 @@ def wrap_subtitle(text: str, max_chars: int = 40) -> str:
 def _build_entries(storyboard: dict, durations: dict) -> list[dict]:
     """One SRT entry per spoken line, in film time order."""
     entries: list[dict] = []
-    cursor = 0.0
+    # The intro card plays before the first narration line, so shift every cue.
+    cursor = intro_seconds(storyboard)
     for shot in storyboard["shots"]:
         sid = shot["id"]
         if sid not in durations:
@@ -93,7 +95,8 @@ def main() -> int:
 
     try:
         durations = json.loads(DURATIONS_PATH.read_text(encoding="utf-8"))
-        entries = _build_entries(load_storyboard(), durations)
+        storyboard = load_storyboard()
+        entries = _build_entries(storyboard, durations)
     except (ValueError, KeyError, OSError) as exc:
         print(f"Error: {exc}", file=sys.stderr)
         return 1
@@ -113,7 +116,8 @@ def main() -> int:
     save_cache("subtitles", "all", entries)
     print(
         f"Wrote {len(entries)} subtitles to {SUBTITLES_PATH} "
-        f"({NARRATION_GAP_SECONDS}s narrator-to-proverb gap)"
+        f"({intro_seconds(storyboard):.1f}s intro offset, "
+        f"{NARRATION_GAP_SECONDS}s narrator-to-proverb gap)"
     )
     return 0
 

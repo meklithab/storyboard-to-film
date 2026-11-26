@@ -1,6 +1,6 @@
 PYTHON ?= python
 
-.PHONY: film test validate narration retime keyframes shots music subtitles assemble smoketest radio_cut
+.PHONY: film test validate narration retime keyframes refresh_reference shots music subtitles assemble smoketest radio_cut
 
 film: validate narration retime keyframes shots music subtitles assemble
 
@@ -18,6 +18,9 @@ retime:
 
 keyframes:
 	"$(PYTHON)" pipeline/keyframes.py
+
+refresh_reference:
+	"$(PYTHON)" pipeline/keyframes.py --refresh-reference
 
 shots:
 	"$(PYTHON)" pipeline/shots.py

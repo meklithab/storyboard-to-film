@@ -25,9 +25,9 @@ def _file_digest(path: Path) -> str:
     return h.hexdigest()
 
 
-def _find_keyframe(shot_id: str) -> Path | None:
+def _find_keyframe(shot_id: str, suffix: str = "") -> Path | None:
     for ext in (".jpg", ".jpeg", ".png"):
-        candidate = KEYFRAMES_DIR / f"{shot_id}{ext}"
+        candidate = KEYFRAMES_DIR / f"{shot_id}{suffix}{ext}"
         if candidate.exists():
             return candidate
     return None
@@ -88,9 +88,12 @@ def main() -> int:
     storyboard = load_storyboard()
     fmt = storyboard.get("format", {})
     vertical = fmt.get("vertical", {})
-    width = int(vertical.get("width", 720))
-    height = int(vertical.get("height", 1280))
+    horizontal = fmt.get("horizontal", {})
     fps = int(fmt.get("fps", 24))
+    formats = (
+        ("", int(vertical.get("width", 720)), int(vertical.get("height", 1280))),
+        ("_wide", int(horizontal.get("width", 1280)), int(horizontal.get("height", 720))),
+    )
 
     SHOTS_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -103,62 +106,69 @@ def main() -> int:
         duration = shot_total_seconds(durations, sid)
         total_frames = max(1, round(duration * fps))
         motion = _motion_for_shot(shot, idx)
-        out_path = SHOTS_DIR / f"{sid}.mp4"
-        wan_path = SHOTS_DIR / f"{sid}_wan.mp4"
 
-        if wan_path.exists():
-            source_kind = "wan"
-            source_path = wan_path
-        else:
-            source_kind = "keyframe"
-            source_path = _find_keyframe(sid)
-            if source_path is None:
-                print(f"Missing keyframe for '{sid}' in {KEYFRAMES_DIR}", file=sys.stderr)
-                return 1
+        for suffix, width, height in formats:
+            item_id = f"{sid}{suffix}"
+            out_path = SHOTS_DIR / f"{item_id}.mp4"
+            wan_path = SHOTS_DIR / f"{sid}_wan{suffix}.mp4"
 
-        payload = {
-            "shot_id": sid,
-            "source_kind": source_kind,
-            "source_hash": _file_digest(source_path),
-            "duration": duration,
-            "motion": motion,
-            "motion_prompt": shot.get("motion_prompt", ""),
-            "width": width,
-            "height": height,
-            "fps": fps,
-        }
+            if wan_path.exists():
+                source_kind = "wan"
+                source_path = wan_path
+            else:
+                source_kind = "keyframe"
+                source_path = _find_keyframe(sid, suffix)
+                if source_path is None:
+                    print(f"Missing keyframe for '{item_id}' in {KEYFRAMES_DIR}", file=sys.stderr)
+                    return 1
 
-        if is_cached("shots", sid, payload, out_path):
-            continue
+            payload = {
+                "shot_id": sid,
+                "format": "horizontal" if suffix else "vertical",
+                "source_kind": source_kind,
+                "source_hash": _file_digest(source_path),
+                "duration": duration,
+                "motion": motion,
+                "motion_prompt": shot.get("motion_prompt", ""),
+                "width": width,
+                "height": height,
+                "fps": fps,
+            }
 
-        if source_kind == "wan":
-            vf = (
-                f"scale={width}:{height}:force_original_aspect_ratio=increase,"
-                f"crop={width}:{height},fps={fps},setsar=1"
+            if is_cached("shots", item_id, payload, out_path):
+                continue
+
+            if source_kind == "wan":
+                vf = (
+                    f"scale={width}:{height}:force_original_aspect_ratio=increase,"
+                    f"crop={width}:{height},fps={fps},setsar=1"
+                )
+                cmd = [
+                    ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
+                    "-i", str(source_path),
+                    "-vf", vf,
+                    "-t", f"{duration:.3f}",
+                    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-an",
+                    str(out_path),
+                ]
+            else:
+                vf = _zoompan_filter(motion, total_frames, width, height, fps)
+                cmd = [
+                    ffmpeg, "-hide_banner", "-loglevel", "error", "-y",
+                    "-loop", "1", "-i", str(source_path),
+                    "-vf", vf,
+                    "-t", f"{duration:.3f}",
+                    "-r", str(fps),
+                    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-an",
+                    str(out_path),
+                ]
+
+            subprocess.run(cmd, check=True)
+            save_cache("shots", item_id, payload)
+            print(
+                f"{item_id}: rendered ({source_kind}, {motion}, {duration:.2f}s, "
+                f"{width}x{height}) -> {out_path.name}"
             )
-            cmd = [
-                ffmpeg, "-y",
-                "-i", str(source_path),
-                "-vf", vf,
-                "-t", f"{duration:.3f}",
-                "-c:v", "libx264", "-pix_fmt", "yuv420p", "-an",
-                str(out_path),
-            ]
-        else:
-            vf = _zoompan_filter(motion, total_frames, width, height, fps)
-            cmd = [
-                ffmpeg, "-y",
-                "-loop", "1", "-i", str(source_path),
-                "-vf", vf,
-                "-t", f"{duration:.3f}",
-                "-r", str(fps),
-                "-c:v", "libx264", "-pix_fmt", "yuv420p", "-an",
-                str(out_path),
-            ]
-
-        subprocess.run(cmd, check=True)
-        save_cache("shots", sid, payload)
-        print(f"{sid}: rendered ({source_kind}, {motion}, {duration:.2f}s) -> {out_path.name}")
 
     return 0
 

@@ -15,12 +15,13 @@ storyboard, including its two voices and its per-shot `proverb` blocks.
 |---|---|---|
 | Validate | `make validate` | Schema + semantic checks (voices, proverb speakers, 8–12 shots, 60–90 s plan) |
 | Narration | `make narration` | Two Amharic WAVs per shot (`<id>_narrator.wav`, `<id>_grandmother.wav`), `durations.json`, `voices_used.json` |
-| Retime | `make retime` | Trims TTS dead air and applies a small speed-up so the film lands at ~86 s; raw takes kept in `outputs/narration/raw/` |
-| Keyframes | `make keyframes` | Four reference variants per character, then one keyframe per shot via Cloudflare FLUX.2 |
-| Shots | `make shots` | Per-shot MP4s (Wan 2.2 clip if present, otherwise FFmpeg slow pan/zoom from the keyframe) |
+| Retime | `make retime` | Trims TTS dead air and applies a small speed-up so the film lands at ~89 s including the 4 s intro; raw takes kept in `outputs/narration/raw/` |
+| Keyframes | `make keyframes` | Four reference variants per character, then a 9:16 and a **true 16:9** keyframe per shot via Cloudflare FLUX.2 |
+| Refresh reference | `make refresh_reference` | Regenerates the approved character sheets from the current prompts when the character design changes |
+| Shots | `make shots` | Vertical and horizontal per-shot MP4s (Wan 2.2 clip if present, otherwise FFmpeg slow pan/zoom) |
 | Music | `make music` | Music cue sheet from `storyboard.json`; checks for `outputs/music/chosen.wav` |
-| Subtitles | `make subtitles` | 20 English SRT cues, timed from measured narration including the narrator→proverb gap |
-| Assemble | `make assemble` | Ducking, burned-in subtitles, end card, −14 LUFS master, vertical + horizontal MP4s |
+| Subtitles | `make subtitles` | 20 English SRT cues, shifted by the intro and timed from measured narration including the narrator→proverb gap |
+| Assemble | `make assemble` | Intro card, ducking, burned-in subtitles, end card, −14 LUFS master, two independent true-format MP4s |
 | Radio cut | `make radio_cut` | Black screen with both voices in order; the cheap story prototype |
 
 `storyboard.json` is the only place prompts, seeds, shots, narration, proverbs,
@@ -55,9 +56,11 @@ make film
 
 That runs `validate → narration → retime → keyframes → shots → music → subtitles → assemble`.
 
-- `outputs/reference/chosen.json` currently approves `grandmother_v1.jpg`.
-  When it exists, reference generation is skipped so the chosen image is never
-  overwritten. To approve a different sheet, edit that file (e.g.
+- `outputs/reference/chosen.json` currently approves `grandmother_v1.jpg`,
+  regenerated from the Habesha-specific character prompt. When it exists, normal
+  reference generation is skipped so the chosen image is never overwritten. To
+  redraw the approved sheets after a prompt change, run `make refresh_reference`.
+  To approve a different sheet, edit that file (e.g.
   `{"grandmother": "grandmother_v3.jpg"}`) and rerun; only affected keyframes
   change.
 - No ACE-Step GPU is required: `make music` writes a deterministic 83 s
@@ -68,17 +71,21 @@ That runs `validate → narration → retime → keyframes → shots → music �
 - Optional: generate Wan 2.2 clips in `notebooks/wan_shots.ipynb`. A
   `<shot_id>_wan.mp4` automatically overrides the FFmpeg pan/zoom fallback.
 
-The film is written to `outputs/final/film_vertical.mp4` (720×1280) and
-`outputs/final/film_horizontal.mp4` (1280×720), plus a 3-second "Made with AI"
-end card. The storyboard plans 83 s; measured TTS came out at 98.8 s, so
-`make retime` removes dead air and applies a small speed-up. Both exports are
-**86.0 s**, inside the 60–90 s requirement. Override the target with
-`TARGET_FILM_SECONDS` if you want a different pace.
+The film opens with a 4-second title card ("Ten small mishaps. Ten proverbs.
+One grandmother who always knows what to say."), then runs the ten shots and a
+3-second "Made with AI" end card. It is written to
+`outputs/final/film_vertical.mp4` (720×1280) and
+`outputs/final/film_horizontal.mp4` (1280×720). The horizontal file is **not** a
+letterboxed vertical video: it is assembled from separately generated 16:9
+keyframes, clips, intro and end card. The storyboard plans 87 s with the intro;
+measured TTS came out longer, so `make retime` removes dead air and applies a
+small speed-up. Both exports are **89.0 s**, inside the 60–90 s requirement.
+Override the target with `TARGET_FILM_SECONDS` if you want a different pace.
 
 ## Regenerating one shot
 
 ```bash
-python pipeline/keyframes.py --shot shot_03
+python pipeline/keyframes.py --shot shot_03   # regenerates both 9:16 and 16:9 keyframes
 make film
 ```
 

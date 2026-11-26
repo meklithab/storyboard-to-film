@@ -139,6 +139,12 @@ def shot_total_seconds(durations: dict[str, Any], shot_id: str) -> float:
     return float(entry)  # legacy single-voice durations.json
 
 
+def intro_seconds(storyboard: dict[str, Any]) -> float:
+    """Length of the on-screen intro card before the first spoken line."""
+    intro = storyboard.get("intro") or {}
+    return float(intro.get("duration_seconds", 0))
+
+
 def narration_pads(clips: list[tuple[str, dict, str]]) -> list[float]:
     """Pad after each spoken line: a gap before the proverb, a tail after it."""
     return [

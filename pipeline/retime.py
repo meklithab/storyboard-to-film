@@ -20,6 +20,7 @@ from common import (
     NARRATION_GAP_SECONDS,
     ROOT_DIR,
     SHOT_PAD_SECONDS,
+    intro_seconds,
     load_storyboard,
     narration_clips,
 )
@@ -28,7 +29,7 @@ NARRATION_DIR = ROOT_DIR / "outputs" / "narration"
 RAW_DIR = NARRATION_DIR / "raw"
 DURATIONS_PATH = NARRATION_DIR / "durations.json"
 MARKER_PATH = NARRATION_DIR / ".retime.json"
-TARGET_FILM_SECONDS = float(os.environ.get("TARGET_FILM_SECONDS", "86"))
+TARGET_FILM_SECONDS = float(os.environ.get("TARGET_FILM_SECONDS", "89"))
 MAX_SPEED = 1.15
 SILENCE_RATIO = 0.025  # 2.5% of each clip's peak
 EDGE_MARGIN_SECONDS = 0.02
@@ -192,12 +193,13 @@ def main() -> int:
 
     pads_total = NARRATION_GAP_SECONDS * len(storyboard["shots"]) + SHOT_PAD_SECONDS * len(storyboard["shots"])
     end_card = float(storyboard["end_card"]["duration_seconds"])
-    available = TARGET_FILM_SECONDS - pads_total - end_card
+    intro = intro_seconds(storyboard)
+    available = TARGET_FILM_SECONDS - pads_total - end_card - intro
     if available <= 0:
         print("TARGET_FILM_SECONDS is too small for the pads and end card.", file=sys.stderr)
         return 1
     speed = min(MAX_SPEED, max(1.0, trimmed_seconds / available))
-    film_seconds = trimmed_seconds / speed + pads_total + end_card
+    film_seconds = trimmed_seconds / speed + pads_total + intro + end_card
 
     payloads: dict[str, bytes] = {}
     lengths: dict[str, float] = {}
@@ -242,6 +244,7 @@ def main() -> int:
             {
                 "speed": round(speed, 4),
                 "target_film_seconds": TARGET_FILM_SECONDS,
+                "intro_seconds": intro,
                 "retimed_hashes": new_hashes,
                 "durations": durations,
             },

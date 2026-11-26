@@ -84,10 +84,12 @@ def validate_storyboard(storyboard_path=STORYBOARD_PATH, schema_path=SCHEMA_PATH
 
         try:
             planned = sum(float(s["duration_seconds"]) for s in shots if isinstance(s, dict))
+            planned += float(storyboard.get("intro", {}).get("duration_seconds", 0))
             planned += float(storyboard["end_card"]["duration_seconds"])
             if not 60 <= planned <= 90:
                 errors.append(
-                    f"Planned runtime must be 60-90 seconds including the end card (found {planned:.1f})."
+                    "Planned runtime must be 60-90 seconds including the intro and "
+                    f"end card (found {planned:.1f})."
                 )
         except (KeyError, TypeError, ValueError):
             # Schema validation already reports malformed duration fields.

@@ -28,6 +28,13 @@ CHOSEN_PATH = REFERENCE_DIR / "chosen.json"
 NO_TEXT_SUFFIX = "no text, no words, no letters, no captions, no watermarks"
 
 
+def _file_digest(path: Path) -> str:
+    """Hash a reference image so a refreshed sheet invalidates keyframe caches."""
+    import hashlib
+
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
 def _generate_image(
     account_id: str,
     api_token: str,
@@ -146,15 +153,25 @@ def _load_chosen(storyboard: dict) -> dict[str, Path] | None:
     return chosen_paths
 
 
-def _step1_references(storyboard: dict, creds: tuple[str, str] | None) -> dict[str, Path] | None:
-    """Generate 4 reference variants per character, then verify chosen.json."""
+def _step1_references(
+    storyboard: dict,
+    creds: tuple[str, str] | None,
+    force: bool = False,
+) -> dict[str, Path] | None:
+    """Generate 4 reference variants per character, then verify chosen.json.
+
+    With ``force=True`` the approved variants are regenerated from the current
+    prompts; use ``make refresh_reference`` when the character design changes.
+    """
     REFERENCE_DIR.mkdir(parents=True, exist_ok=True)
 
-    # A human-approved sheet is final: never overwrite the chosen images by
-    # regenerating variants after the storyboard's reference prompt changes.
-    if CHOSEN_PATH.exists():
+    # A human-approved sheet is final: never overwrite it during a normal film
+    # run. An explicit refresh is the only way to replace approved images.
+    if CHOSEN_PATH.exists() and not force:
         print("Using approved references from chosen.json; skipping reference generation.")
         return _load_chosen(storyboard)
+    if force and CHOSEN_PATH.exists():
+        print("Refreshing approved references from the current storyboard prompts.")
 
     style_block = storyboard["style_block"]
     account_id, api_token = creds or ("", "")
@@ -170,13 +187,13 @@ def _step1_references(storyboard: dict, creds: tuple[str, str] | None) -> dict[s
             out_path = REFERENCE_DIR / f"{item_id}.jpg"
             payload = {"char_id": cid, "prompt": prompt, "seed": seed, "model": IMAGE_MODEL}
 
-            if not is_cached("reference", item_id, payload, out_path):
+            if force or not is_cached("reference", item_id, payload, out_path):
                 if not account_id:
                     account_id = get_env("CLOUDFLARE_ACCOUNT_ID")
                     api_token = get_env("CLOUDFLARE_API_TOKEN")
                 _generate_image(account_id, api_token, prompt, seed, 512, 512, out_path, "reference")
                 save_cache("reference", item_id, payload)
-                print(f"{item_id}: generated -> {out_path.name}")
+                print(f"{item_id}: {'refreshed' if force else 'generated'} -> {out_path.name}")
 
     chosen_paths = _load_chosen(storyboard)
     if chosen_paths is None and not CHOSEN_PATH.exists():
@@ -191,11 +208,15 @@ def _step2_keyframes(
     chosen_paths: dict[str, Path],
     only_shot: str | None = None,
 ) -> int:
-    """Generate keyframe per shot (or one shot with --shot)."""
+    """Generate a vertical and a true widescreen keyframe per shot."""
     KEYFRAMES_DIR.mkdir(parents=True, exist_ok=True)
     style_block = storyboard["style_block"]
     char_map = {c["id"]: c for c in storyboard["characters"]}
     shots = storyboard["shots"]
+    horizontal_suffix = storyboard.get("format", {}).get(
+        "horizontal_prompt_suffix",
+        "Wide 16:9 landscape composition of the same scene, full action visible across the frame",
+    )
 
     if only_shot:
         shots = [s for s in shots if s["id"] == only_shot]
@@ -210,35 +231,52 @@ def _step2_keyframes(
         sid = shot["id"]
         seed = int(shot["seed"])
         char_descs = ". ".join(char_map[cid]["description"] for cid in shot["characters"])
-        prompt = f"{style_block}. {char_descs}. {shot['image_prompt']}. {NO_TEXT_SUFFIX}"
+        context = f"Story context: {shot['reason']}. Shot size: {shot['shot_size']}."
+        base_prompt = f"{style_block}. {context} {char_descs}. {shot['image_prompt']}."
         ref_files = [chosen_paths[cid] for cid in shot["characters"] if cid in chosen_paths]
-        out_path = KEYFRAMES_DIR / f"{sid}.jpg"
+        ref_hashes = [_file_digest(p) for p in ref_files]
 
-        payload = {
-            "shot_id": sid,
-            "prompt": prompt,
-            "seed": seed,
-            "model": IMAGE_MODEL,
-            "refs": [p.name for p in ref_files],
-        }
-
-        if not is_cached("keyframes", sid, payload, out_path):
-            if not account_id:
-                account_id = get_env("CLOUDFLARE_ACCOUNT_ID")
-                api_token = get_env("CLOUDFLARE_API_TOKEN")
-            _generate_image(
-                account_id,
-                api_token,
-                prompt,
-                seed,
-                576,
+        specs = (
+            (sid, f"{base_prompt} {NO_TEXT_SUFFIX}", 576, 1024, "keyframes"),
+            (
+                f"{sid}_wide",
+                f"{base_prompt} {horizontal_suffix}. {NO_TEXT_SUFFIX}",
                 1024,
-                out_path,
-                "keyframes",
-                ref_images=ref_files,
-            )
-            save_cache("keyframes", sid, payload)
-            print(f"{sid}: generated -> {out_path.name}")
+                576,
+                "keyframes_wide",
+            ),
+        )
+
+        for item_id, prompt, width, height, stage in specs:
+            out_path = KEYFRAMES_DIR / f"{item_id}.jpg"
+            payload = {
+                "shot_id": sid,
+                "prompt": prompt,
+                "seed": seed,
+                "model": IMAGE_MODEL,
+                "refs": [p.name for p in ref_files],
+                "ref_hashes": ref_hashes,
+                "width": width,
+                "height": height,
+            }
+
+            if not is_cached(stage, item_id, payload, out_path):
+                if not account_id:
+                    account_id = get_env("CLOUDFLARE_ACCOUNT_ID")
+                    api_token = get_env("CLOUDFLARE_API_TOKEN")
+                _generate_image(
+                    account_id,
+                    api_token,
+                    prompt,
+                    seed,
+                    width,
+                    height,
+                    out_path,
+                    stage,
+                    ref_images=ref_files,
+                )
+                save_cache(stage, item_id, payload)
+                print(f"{item_id}: generated -> {out_path.name} ({width}x{height})")
 
     return 0
 
@@ -246,14 +284,22 @@ def _step2_keyframes(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate character references and shot keyframes.")
     parser.add_argument("--shot", help="Regenerate only this shot id (e.g. shot_03)")
+    parser.add_argument(
+        "--refresh-reference",
+        action="store_true",
+        help="Regenerate approved character sheets from the current prompts",
+    )
     args = parser.parse_args()
 
     load_env()
     storyboard = load_storyboard()
 
-    chosen_paths = _load_chosen(storyboard) if args.shot else None
-    if chosen_paths is None:
-        chosen_paths = _step1_references(storyboard, None)
+    if args.refresh_reference:
+        chosen_paths = _step1_references(storyboard, None, force=True)
+    else:
+        chosen_paths = _load_chosen(storyboard) if args.shot else None
+        if chosen_paths is None:
+            chosen_paths = _step1_references(storyboard, None)
     if chosen_paths is None:
         return 2
 

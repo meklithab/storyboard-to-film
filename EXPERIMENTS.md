@@ -55,15 +55,15 @@ Nothing here is a claimed model comparison that was not run.
    *Change:* `keyframes._load_chosen()` auto-selects `<char>_v1.jpg` when
    `chosen.json` is absent, printing the choice; `chosen.json` still overrides.  
    *Result:* the stage now returns paths for the existing grandmother sheet,
-   so keyframes can begin on the first run. Live confirmation pending a full
-   API + FFmpeg run.
+   so keyframes can begin on the first run. Confirmed in the full live
+   API + FFmpeg run: all keyframes, clips and both finals were produced.
 
 8. **E08 — Editing an image prompt must not re-synthesise voices. (code)**  
    *Hypothesis:* dual-voice outputs made cache isolation easier to get wrong.  
    *Change:* narration cache keys are per `<shot>_<role>`, and
    `tests/test_rerun.py` snapshots all 20 WAVs.  
    *Result:* test now asserts zero narration re-takes after an image-prompt
-   edit; execution pending a full pipeline run.
+   edit; confirmed in the full pipeline run: all 20 narration WAVs stayed cached.
 
 9. **E09 — A rejected TTS voice should not waste the whole quota. (code)**  
    *Hypothesis:* `Puck`/`Sulafat` may not exist on every endpoint; three blind
@@ -118,15 +118,16 @@ Nothing here is a claimed model comparison that was not run.
     *Result:* `_load_chosen()` resolves `{'grandmother': 'grandmother_v1.jpg'}`
     and no Cloudflare calls are made for references.
 
-15. **E15 — Silence trimming alone was not enough. (live)** 
+15. **E15 — Silence trimming plus a small speed-up fits the brief. (live)** 
     *Hypothesis:* the 20 Gemini clips carry 0.1–0.9 s of dead air each; removing
     it would bring the 98.8 s film under 90 s. 
     *Change:* `pipeline/retime.py` trims at 2.5% of peak with a 0.02 s margin,
-    then derives the smallest speed-up needed to hit `TARGET_FILM_SECONDS`
-    (86 s), keeping raw WAVs in `outputs/narration/raw/`. 
-    *Result:* trimming removed ~9 s; a 1.054x deterministic resample reached
-    exactly **86.0 s**. Rerunning prints `skipped (already trimmed, speed
-    1.054x)`, so nothing is processed twice. Both finals verified at 86.000 s.
+    then derives the smallest speed-up needed to hit `TARGET_FILM_SECONDS`.
+    Raw WAVs stay in `outputs/narration/raw/`. After the intro was added, the
+    target became 89 s including intro and end card. 
+    *Result:* the final revision uses a 1.068x deterministic resample and both
+    exports measure exactly **89.0 s**. Rerunning prints `skipped (already
+    trimmed)`, so nothing is processed twice.
 
 16. **E16 — The end card needed a real font. (live)** 
     *Hypothesis:* the assembly crash (`0xC0000005`) at `drawtext` was a missing
@@ -135,7 +136,36 @@ Nothing here is a claimed model comparison that was not run.
     Windows path; `shots.py`, `radio_cut.py` and `assemble.py` now use
     `common.ffmpeg_bin()` so winget installs work without a PATH edit. 
     *Result:* `make assemble` exported `film_vertical.mp4` (720×1280) and
-    `film_horizontal.mp4` (1280×720), both 86.000 s.
+    `film_horizontal.mp4` (1280×720), both 89.000 s after the intro revision.
+
+17. **E17 — The grandmother needed explicitly Habesha features. (live)** 
+    *Hypothesis:* generic "old grandmother" language produced a character the
+    audience said did not look Ethiopian / Habesha. 
+    *Change:* the character `description` and `reference_prompt` now specify
+    deep warm-brown skin, high cheekbones, braided silver-streaked hair in a
+    white netela, gold hoop earrings, and a white kemis with gold/red tibb
+    embroidery. `make refresh_reference` redraws approved sheets; reference
+    hashes were added to the keyframe cache. 
+    *Result:* v1–v4 were regenerated, all 20 keyframes and both sets of shot
+    clips were rebuilt from the new reference. No TTS calls were repeated.
+
+18. **E18 — Descriptive prompts and an intro made the story readable. (live)** 
+    *Hypothesis:* listing a subject in `image_prompt` was not enough to show
+    what was happening, and starting on shot 01 gave the audience no setup. 
+    *Change:* each prompt now includes `reason`, `shot_size`, location, action,
+    background and lighting; a 4 s `intro` block renders a title plus "Ten small
+    mishaps. Ten proverbs. One grandmother who always knows what to say." 
+    *Result:* the first subtitle cue moved to 00:00:04, the intro is present in
+    both finals, and `make test` still passes with the intro-aware timeline.
+
+19. **E19 — The horizontal export had to be shot wide, not reframed. (live)** 
+    *Hypothesis:* a blurred 16:9 background around the vertical master would
+    always look like a vertical film. 
+    *Change:* `format.horizontal_prompt_suffix` drives 1024×576 keyframes;
+    `shots.py` renders 1280×720 wide clips, and `assemble.py` builds an
+    independent horizontal timeline, intro, subtitles and end card. 
+    *Result:* ffprobe reports `film_horizontal.mp4` at 1280×720 and
+    `film_vertical.mp4` at 720×1280, both 89.000 s.
 
 ## Still to run (live)
 
